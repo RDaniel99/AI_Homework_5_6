@@ -36,28 +36,23 @@ export default class State {
         let table = this.getTable()
         if(table[rowStart][colStart] ==='blank')
         {
-            console.log('no piece is there')
             return false
         }
         if(!(table[rowStart][colStart]===this.next_player))
         {
-            console.log('wrong player')
             return false
         }     
         if(!(table[rowFinal][colFinal]==='blank'))
         {
-            console.log('not blank position')
             return false
         }
         if(!(Math.abs(rowFinal-rowStart)<=1 && Math.abs(colFinal-colStart)<=1))
         {
-            console.log('too far')
             return false
         }
 
         if(!(between(colStart,1,4)&&between(colStart,1,4)&&between(colStart,1,4)&&between(colStart,1,4)))
         {
-            console.log('out of bounds')
             return false
         }
         return true
@@ -68,9 +63,7 @@ export default class State {
         {
             if(this.next_player==='white')
             {
-                console.log('white pieces:')
-                console.log(this.white_pieces)
-                this.white_pieces = this.white_pieces.filter(piece=> !(piece.line===rowStart&&piece.column===colStart))
+                this.white_pieces = this.white_pieces.filter(piece=> !(piece.row===rowStart&&piece.column===colStart))
 
                 if(this.white_pieces[0]!=='-') 
                     this.white_pieces=['-',...this.white_pieces]
@@ -80,9 +73,7 @@ export default class State {
             }
             else if (this.next_player==='black'){
                 
-                console.log('black pieces:')
-                console.log(this.black_pieces)
-                this.black_pieces = this.black_pieces.filter(piece=> !(piece.line===rowStart&&piece.column===colStart))
+                this.black_pieces = this.black_pieces.filter(piece=> !(piece.row===rowStart&&piece.column===colStart))
 
                 if(this.black_pieces[0]!=='-') 
                     this.black_pieces=['-',...this.black_pieces]
@@ -100,14 +91,14 @@ export default class State {
             {
                 return
             }
-            table[element.line][element.column] = 1
+            table[element.row][element.column] = 1
         })
         this.white_pieces.forEach((element,idx)=>{
             if(idx===0)
             {
                 return
             }
-            table[element.line][element.column] = 2
+            table[element.row][element.column] = 2
         })
         return table.map(
             val=>val.map(
@@ -120,14 +111,14 @@ export default class State {
         var flag_black = true
 
         for(let i = 1; i <= 4; i++) {
-            if(this.white_pieces[i].line !== 4) {
+            if(this.white_pieces[i].row !== 4) {
                 flag_white = false
                 break
             }
         }
 
         for(let i = 1; i <= 4; i++) {
-            if(this.black_pieces[i].line !== 4) {
+            if(this.black_pieces[i].row !== 4) {
                 flag_black = false
             }
         }
@@ -143,12 +134,12 @@ export default class State {
         for(let i = 1; i <= 4; i++) {
             for(let j = i + 1; j <= 4; j++) {
                 if( this.white_pieces[i].col === this.white_pieces[j].col &&
-                    this.white_pieces[i].lin === this.white_pieces[j].lin) {
+                    this.white_pieces[i].row === this.white_pieces[j].row) {
                     return false
                 }
 
                 if( this.black_pieces[i].col === this.black_pieces[j].col &&
-                    this.black_pieces[i].lin === this.black_pieces[j].lin) {
+                    this.black_pieces[i].row === this.black_pieces[j].row) {
                     return false
                 }
             }
@@ -159,14 +150,50 @@ export default class State {
 
     compute_fitness() {
         let fitness = 0
-        for(let i = 1; i <= 4; i++) {
-            fitness += 4 - this.white_pieces[i].lin
-            fitness -= this.black_pieces[i].lin - 1
+
+        if(this.next_player ==='black')
+        {
+            this.black_pieces.forEach(val=>{
+                if(val!=='-')
+                {
+                    fitness=fitness+val.row-4
+                }
+            })
+        }
+        else if(this.next_player==='white')
+        {
+            this.white_pieces.forEach(val=>{
+                if(val!=='-')
+                {
+                    fitness+=(val.row)
+                }
+            })
         }
 
         return fitness
     }
 
+    getFitnessOfMove(col,row,colFinal,rowFinal)
+    {
+        if(!col)
+            return -9999
+        if(!row)
+            return -9999
+        if(!colFinal)
+            return -9999
+        if(!rowFinal)
+            return -9999
+
+        let boardCpy = this.createState(this.white_pieces,this.black_pieces,this.next_player)
+        if(!(boardCpy.validMove(col,row,colFinal,rowFinal)))
+        {
+            return -9999
+        }
+        boardCpy.makeMove(col,row,colFinal,rowFinal)
+        console.log(boardCpy)
+        console.log(boardCpy.compute_fitness())
+        return boardCpy.compute_fitness()
+    }
     generate_next_states() {
         let next_states = []
 
@@ -190,7 +217,6 @@ export default class State {
         for(let i = 1; flag  && i <= 4; i++) {
             for(let dir = 0; dir < 3; dir++) {
                 this.black_pieces[i].move(dir)
-                
                 let possible_state = this.createState(this.white_pieces, this.black_pieces, "white")
 
                 if(possible_state.is_valid()) {
@@ -200,7 +226,6 @@ export default class State {
                 this.black_pieces[i].move((dir + 2) % 4)
             }
         }
-
         return next_states
     }
 

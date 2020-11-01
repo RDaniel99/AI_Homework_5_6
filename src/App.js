@@ -25,19 +25,16 @@ const useStyles = makeStyles((theme) => ({
 
 function App() {
 
-  console.log('refresh')
   let classes = useStyles()
   const [board, setBoard] = useState(new State())
   const [table, updateTable] = useState(board.getTable())
   const [move, updateMove] = useState({start:{col:null, row:null}})
 
   function makeMove(col, row, collor){
-    console.log('called make move')
     if(move.start.col!==null)
     {
       if(board.validMove(move.start.col,move.start.row, col, row))
       {
-        console.log(`legal move from ${move.start.row},${move.start.col} to ${row}${col}`)
         board.makeMove(move.start.col,move.start.row,col,row)
         setBoard(board)
         updateMove({start:{col:null, row:null}})
@@ -45,14 +42,18 @@ function App() {
       }
       else
       {
-        console.log(`ilegal move from ${move.start.row},${move.start.col} to ${row},${col}`)
         updateMove({start:{col:null, row:null}})
       }
       
     }
     else{
-      console.log('first move')
-      updateMove({start:{col:col,row:row}})
+      if(table[row][col]===board.next_player)
+      {
+        updateMove({start:{col:col,row:row}})
+      }
+      else{
+        updateMove({start:{col:null,row:null}})
+      }
     }
   }
 
@@ -92,7 +93,7 @@ function App() {
                   {
                     val2==='white'?<Piece collor = 'white' />:
                     val2==='black'?<Piece collor = 'black' />:
-                    val2==='blank'?<Piece collor = 'blank' />:null
+                    val2==='blank'?<Piece collor = 'blank' fitness ={board.getFitnessOfMove(move.start.col,move.start.row,col,row)} />:null
                   }
                   </Paper>
                 </Grid>
