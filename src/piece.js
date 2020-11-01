@@ -1,16 +1,38 @@
-export class Piece {
-    static dline    = [1, 0, -1, 0]
-    static dcolumn  = [0, 1, 0, -1]
+import React from 'react'
+import { makeStyles } from '@material-ui/core/styles';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 
-    // rows and columns on table are from 1 to 4
-    constructor(line, column, color) {
-        this.line   = line
-        this.column = column
-        this.color  = color
+const useStyles = makeStyles((theme) => ({
+    root: {
+      flexGrow: 1,
+    },
+    paper: {
+        display:'flex',
+        alignItems:'center',
+        justifyContent:'center',
+        padding: theme.spacing(1),
+        height:'100%',
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
+    },
+    piece:{
+        minHeight:'100px'
     }
+  }));
 
-    move(direction) {
-        this.line   += dline[direction]
-        this.column += dcolumn[direction]
-    }
+  
+export default function Piece({collor}){
+
+    const classes = useStyles();
+
+    return(
+        <div>
+        {
+            collor==='white'?<FiberManualRecordIcon style={{alignContent:'center', fontSize:50, fill:'grey'}}/>:
+            collor==='black'?<FiberManualRecordIcon style={{alignContent:'center', fontSize:50, fill:'black'}}/>:
+            collor==='blank'?<div></div>:
+            <div></div>
+        }    
+        </div>    
+    ) 
 }
