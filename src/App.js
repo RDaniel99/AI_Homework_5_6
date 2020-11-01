@@ -29,33 +29,53 @@ function App() {
   let classes = useStyles()
   const [board, setBoard] = useState(new State())
   const [table, updateTable] = useState(board.getTable())
-  const [move, updateMove] = useState({start:{x:null, y:null}})
+  const [move, updateMove] = useState({start:{col:null, row:null}})
 
   function makeMove(col, row, collor){
     console.log('called make move')
-    if(move.start.x!==null)
+    if(move.start.col!==null)
     {
-      if(board.validMove(move.start.x,move.start.y, col, row))
+      if(board.validMove(move.start.col,move.start.row, col, row))
       {
-        console.log(`legal move from ${move.start.y},${move.start.x} to ${row}${col}`)
-        board.makeMove(move.start.x,move.start.y,col,row)
+        console.log(`legal move from ${move.start.row},${move.start.col} to ${row}${col}`)
+        board.makeMove(move.start.col,move.start.row,col,row)
         setBoard(board)
-        updateMove({start:{x:null, y:null}})
+        updateMove({start:{col:null, row:null}})
         updateTable(board.getTable())
       }
       else
       {
-        console.log(`ilegal move from ${move.start.y},${move.start.x} to ${row},${col}`)
-        updateMove({start:{x:null, y:null}})
+        console.log(`ilegal move from ${move.start.row},${move.start.col} to ${row},${col}`)
+        updateMove({start:{col:null, row:null}})
       }
       
     }
     else{
       console.log('first move')
-      updateMove({start:{x:col,y:row}})
+      updateMove({start:{col:col,row:row}})
     }
   }
 
+  function getPaperStyle(col, row)
+  {
+    if(move.start.col)
+    {
+      if(move.start.col===col && move.start.row ===row)
+      {
+        return {cursor:'pointer', backgroundColor:'red'}
+      }
+      else if (board.validMove(move.start.col,move.start.row,col,row))
+      {
+        return {cursor:'pointer', backgroundColor:'yellow'}
+      }
+    }
+    else{
+      if(table[row][col]===board.next_player)
+      {
+        return {cursor:'pointer'}
+      }
+    }
+  }
   return (
     <div >
       <h1>{`${board.next_player}'s turn`}</h1>
@@ -68,7 +88,7 @@ function App() {
               val.map((val2,col)=>
                 col!==0?
                 <Grid item xs={3} className={classes.piece}>
-                  <Paper className={classes.paper} onClick={()=>makeMove(col,row,val2)} style={{cursor:'pointer'}} >
+                  <Paper className={classes.paper} onClick={()=>makeMove(col,row,val2)} style={getPaperStyle(col,row)} >
                   {
                     val2==='white'?<Piece collor = 'white' />:
                     val2==='black'?<Piece collor = 'black' />:
