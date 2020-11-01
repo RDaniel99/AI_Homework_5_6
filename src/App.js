@@ -56,6 +56,17 @@ function App() {
       }
     }
   }
+  function makeBestMove(){
+    setBoard(board.get_best_next_step()) 
+    updateTable(board.get_best_next_step().getTable())
+    updateMove({start:{col:null,row:null}})
+
+  }
+  function resetStates(){
+    setBoard(new State()) 
+    updateTable((new State()).getTable())
+    updateMove({start:{col:null,row:null}})
+  }
 
   function getPaperStyle(col, row)
   {
@@ -77,10 +88,21 @@ function App() {
       }
     }
   }
+  if(board.is_final())
+    return (
+    <div>
+      <h1>{`${board.next_player==='white'?'black':'white'} won`}</h1>
+      <button onClick={()=>{resetStates()}}>play again</button>
+    </div>
+    )
+  else
   return (
-    <div >
-      <h1>{`${board.next_player}'s turn`}</h1>
+    <div style={{display:'flex', flexDirection:'column'}}>
       <Grid container spacing={3}>
+        <Grid container item xs={12}>
+        <h1>{`${board.next_player}'s turn`}</h1>
+        <button onClick={()=>{makeBestMove()} }>make best move</button>
+        </Grid>
         {
         table.map((val,row)=>
           <Grid container item xs={12} spacing={3}>
