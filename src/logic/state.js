@@ -149,25 +149,27 @@ export default class State {
     }
 
     compute_fitness() {
+        console.log('computing fitness for')
         let fitness = 0
 
-        if(this.next_player ==='black')
+        /// the board is in whites turn after it does blacks move, we compute black move fitness here
+        if(this.next_player ==='white')
         {
-            this.black_pieces.forEach(val=>{
-                if(val!=='-')
-                {
-                    fitness=fitness+val.row-4
-                }
-            })
+            console.log('black')
+            for (let idx =1;idx<=4;idx++)
+            {
+                fitness = fitness+(4-this.black_pieces[idx].row)**2
+            }
         }
-        else if(this.next_player==='white')
+        
+        /// the board is in black turn after it does whites move, we compute whites move fitness here
+        else if(this.next_player==='black')
         {
-            this.white_pieces.forEach(val=>{
-                if(val!=='-')
-                {
-                    fitness+=(val.row)
-                }
-            })
+            console.log('white')
+            for (let idx =1;idx<=4;idx++)
+            {
+                fitness = fitness+(this.white_pieces[idx].row-1)**2
+            }
         }
 
         return fitness
