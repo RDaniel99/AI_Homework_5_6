@@ -1,7 +1,7 @@
 import Grid from '@material-ui/core/Grid'
 import { useState } from 'react'
 import State from './logic/state'
-import Piece from './Piece'
+import Piece from './piece'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles';
 

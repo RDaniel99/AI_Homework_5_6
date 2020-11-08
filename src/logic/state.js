@@ -223,4 +223,23 @@ export default class State {
 
         return best_state
     }
+
+    get_best_next_step_minimax() {
+        let next_states = this.generate_next_states()
+
+        console.log('Root: ')
+        console.log(this.getTable())
+
+        console.log('Level 1: ')
+        let next_next_states = []
+        for(let i = 0; i < next_states.length; i++) {
+            console.log(next_states[i].getTable())
+            next_next_states.push(next_states[i].generate_next_states())
+        }
+
+        console.log('Level 2: ')
+        for(let i = 0; i < next_next_states.length; i++) {
+            console.log(next_next_states[i].getTable())
+        }
+    }
 }
