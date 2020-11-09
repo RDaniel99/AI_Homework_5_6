@@ -1,4 +1,4 @@
-import Piece from './piece'
+import Piece from './pieceLogic'
 
 function between(x, min, max) {
     return x >= min && x <= max;
@@ -20,6 +20,7 @@ export default class State {
         // So the lists can start from 1
         this.white_pieces = ['-']
         this.black_pieces = ['-']
+        this.lastMove = undefined
         this.next_player = 'black'
 
         for (let col = 1; col <= 4; col++) {
@@ -65,6 +66,7 @@ export default class State {
 
     makeMove(colStart, rowStart, colFinal, rowFinal) {
         if (this.validMove(colStart, rowStart, colFinal, rowFinal)) {
+            this.lastMove = (colStart, rowStart, colFinal, rowFinal)
             if (this.next_player === 'white') {
                 this.white_pieces = this.white_pieces.filter(piece => !(piece.row === rowStart && piece.column === colStart))
 
@@ -146,9 +148,17 @@ export default class State {
         return true
     }
 
-    compute_fitness() {
+    compute_fitness(collor) {
         let fitness = 0
 
+        if (collor) {
+            let aux = this.next_player
+            this.next_player = collor
+            let res = this.compute_fitness()
+            this.next_player = aux
+
+            return res
+        }
         /// the board is in whites turn after it does blacks move, we compute black move fitness here
         if (this.next_player === 'white') {
             for (let idx = 1; idx <= 4; idx++) {
@@ -187,18 +197,13 @@ export default class State {
     generate_next_states() {
         let next_states = []
 
-        for (let i = 1; i<=4; i++)
-        {
-            for (let j = 1; j<=4; j++)
-            {
-                for (let i2 = 1; i2<=4; i2++)
-                {
-                    for (let j2 = 1;j2<=4; j2++)
-                    {
-                        if(this.validMove(i,j,i2,j2))
-                        {
-                            let aux = this.createState(this.white_pieces,this.black_pieces,this.next_player)
-                            aux.makeMove(i,j,i2,j2)
+        for (let i = 1; i <= 4; i++) {
+            for (let j = 1; j <= 4; j++) {
+                for (let i2 = 1; i2 <= 4; i2++) {
+                    for (let j2 = 1; j2 <= 4; j2++) {
+                        if (this.validMove(i, j, i2, j2)) {
+                            let aux = this.createState(this.white_pieces, this.black_pieces, this.next_player)
+                            aux.makeMove(i, j, i2, j2)
                             next_states.push(aux)
                         }
                     }
@@ -209,6 +214,9 @@ export default class State {
     }
 
     get_best_next_step() {
+        let y = this.getBestAlphaBeta(this, 2, -9999, 9999, true)
+
+        return y
         let next_states = this.generate_next_states()
 
         let best_state = next_states[0]
@@ -224,22 +232,93 @@ export default class State {
         return best_state
     }
 
-    get_best_next_step_minimax() {
-        let next_states = this.generate_next_states()
+    getBestAlphaBeta(node, depth, a, b, maximizingPlayer) {
+        console.log(depth)
+        if (depth === 0)
+            return node
 
-        console.log('Root: ')
-        console.log(this.getTable())
-
-        console.log('Level 1: ')
-        let next_next_states = []
-        for(let i = 0; i < next_states.length; i++) {
-            console.log(next_states[i].getTable())
-            next_next_states.push(next_states[i].generate_next_states())
+        let bestChild = undefined
+        if (maximizingPlayer) {
+            let value = -9999
+            for (let child of node.generate_next_states()) {
+                let aux = child.getBestAlphaBeta(child, depth - 1, a, b, false)
+                if (aux) {
+                    if (value < aux.compute_fitness(this.next_player)) {
+                        value = aux.compute_fitness(this.next_player)
+                        bestChild = child
+                    }
+                }
+                a = a > value ? a : value
+                if (a >= b)
+                    break
+            }
         }
-
-        console.log('Level 2: ')
-        for(let i = 0; i < next_next_states.length; i++) {
-            console.log(next_next_states[i].getTable())
+        else {
+            bestChild = undefined
+            let value = 9999
+            for (let child of node.generate_next_states()) {
+                let aux = child.getBestAlphaBeta(child, depth - 1, a, b, true)
+                if (aux) {
+                    if (value > aux.compute_fitness(this.next_player)) {
+                        value = aux.compute_fitness(this.next_player)
+                        bestChild = child
+                    }
+                    b = b < value ? b : value
+                    if (b <= a)
+                        break
+                }
+            }
         }
+        return bestChild
+    }
+
+    getBestMinMax() {
+
+        let nextStates = this.generate_next_states()
+
+        let best = undefined
+        let maxFitness1 = -9999
+        let minFitness1 = 9999
+
+        let maxFitness2 = -9999
+        let minFitness2 = 9999
+
+        /// max
+        for (let state of nextStates) {
+            /// min
+            for (let state2 of state.generate_next_states()) {
+                /// max
+                for (let state3 of state.generate_next_states()) {
+                    if (state3.compute_fitness()) {
+                        /// min
+                        for (let state4 of state.generate_next_states()) {
+                            if (state4.compute_fitness() < minFitness2) {
+                                best = state
+                                minFitness2 = state4.compute_fitness()
+                            }
+                            else if (state4.compute_fitness() === minFitness2) {
+                                if (state3.compute_fitness() > maxFitness2) {
+                                    best = state
+                                    maxFitness2 = state3.compute_fitness()
+                                }
+                                else if (state3.compute_fitness() === maxFitness2) {
+                                    if (state2.compute_fitness() < minFitness1) {
+                                        best = state
+                                        minFitness1 = state.compute_fitness()
+                                    }
+                                    else if (state2.compute_fitness() === minFitness1) {
+                                        if (state.compute_fitness() > maxFitness1) {
+                                            maxFitness1 = state.compute_fitness()
+                                            best = state
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return best
     }
 }
