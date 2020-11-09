@@ -248,8 +248,8 @@ export default class State {
             for (let child of node.generate_next_states()) {
                 let aux = child.getBestAlphaBeta(child, depth - 1, a, b, false)
                 if (aux) {
-                    if (value < aux.compute_fitness(this.next_player)) {
-                        value = aux.compute_fitness(this.next_player)
+                    if (value < aux.compute_fitness_using_perm_strategy()) {
+                        value = aux.compute_fitness_using_perm_strategy()
                         bestChild = child
                     }
                 }
@@ -264,8 +264,8 @@ export default class State {
             for (let child of node.generate_next_states()) {
                 let aux = child.getBestAlphaBeta(child, depth - 1, a, b, true)
                 if (aux) {
-                    if (value > aux.compute_fitness(this.next_player)) {
-                        value = aux.compute_fitness(this.next_player)
+                    if (value > aux.compute_fitness_using_perm_strategy() {
+                        value = aux.compute_fitness_using_perm_strategy()
                         bestChild = child
                     }
                     b = b < value ? b : value
