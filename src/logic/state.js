@@ -1,3 +1,4 @@
+import { Copyright } from '@material-ui/icons';
 import Piece from './piece'
 
 function between(x, min, max) {
@@ -241,5 +242,69 @@ export default class State {
         for(let i = 0; i < next_next_states.length; i++) {
             console.log(next_next_states[i].getTable())
         }
+    }
+
+    compute_distance_between_position(rowStart, colStart, rowEnd, colEnd) {
+        let difRows = (rowStart < rowEnd ? rowEnd - rowStart : rowStart - rowEnd)
+        let difCols = (colStart < colEnd ? colEnd - colStart : colStart - colEnd)
+
+        return difRows + difCols
+    }
+
+    compute_best_permutation(color) {
+        fn_pos = []
+        curr_pos = []
+        if(color == 'white') {
+            curr_pos = this.white_pieces
+            for(let i = 1; i <= 4; i++) {
+                fn_pos.push([4, i])
+            }
+        }
+        else {
+            curr_pos = this.black_pieces
+            for(let i = 1; i <= 4; i++) {
+                fn_pos.push([1, i])
+            }
+        }
+
+        bst = 29909259 // ceva super mare idk
+        for(let a = 1; a <= 4; a++) {
+            for(let b = 1; b <= 4; b++) {
+                if(a != b) {
+                    for(let c = 1; c <= 4; c++) {
+                        if(a != c && b != c) {
+                            for(let d = 1; d <= 4; d++) {
+                                if(a != d && b != d && c != d) {
+                                    fn_perm = [a, b, c, d]
+                                    ans = 0
+                                    for(let k = 1; k <= 4; k++) {
+                                        let rowStart = curr_pos[k][0]
+                                        let rowEnd = fn_pos[fn_perm[k][0]]
+
+                                        let colStart = curr_pos[k][1]
+                                        let colEnd = fn_pos[fn_perm[k][1]]
+
+                                        dist = compute_distance_between_position(rowStart, colStart, rowEnd, colEnd)
+                                        ans += dist
+                                    }
+
+                                    if(bst > ans) {
+                                        bst = ans
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return bst
+    }
+
+    compute_fitness_using_perm_strategy() {
+        other = (this.next_player == 'black' ? 'white' : 'black')
+
+        return this.compute_best_permutation(this.next_player) - this.compute_best_permutation(other)
     }
 }
